@@ -619,10 +619,13 @@ TabHandles.FWQ1Settings:Toggle({
     end
 })
 
-local TabHandles2 = {
-    FWQ2Settings = Tabs.Game:Tab({ Title = "被遗弃", Icon = "crown" }),
+local Tabs = {
+    Game = Window:Section({ Title = "面板", Icon = "crown" ,Opened = true })
 }
 
+local TabHandles = {
+    FWQ2Settings = Tabs.Game:Tab({ Title = "被遗弃", Icon = "crown" }),
+}
 TabHandles2.FWQ2Settings:Button({
     Title = "旧冬被遗弃",
     Callback = function()
@@ -756,8 +759,12 @@ TabHandles2.FWQ2Settings:Button({
     end
 })
 
-local TabHandles3 = {
-    FWQ3Settings = Tabs.Game:Tab({ Title = "99夜", Icon = "crown" }),
+local Tabs = {
+    Game = Window:Section({ Title = "面板", Icon = "crown" ,Opened = true })
+}
+
+local TabHandles = {
+    FWQ3Settings = Tabs.Game:Tab({ Title = "森林中的99夜", Icon = "crown" }),
 }
 
 TabHandles3.FWQ3Settings:Button({
@@ -774,25 +781,177 @@ TabHandles3.FWQ3Settings:Button({
     end
 })
 
-TabHandles3.FWQ3Settings:Button({
-    Title = "UnicoX99夜 好用！",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/XiaoXuCynic/Free-Script/refs/heads/main/UnicoX99%E5%A4%9C%E6%B7%B7%E6%B7%86.lua"))()
+Tabs.esp:Section({ Title = "Esp物品", Icon = "package" })
+
+Tabs.esp:Dropdown({
+    Title = "选择Esp物品",
+    Values = ie,
+    Value = {},
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        ShenChouItems = options
+        if espItemsxipro then
+            for _, name in ipairs(ie) do
+                if table.find(ShenChouItems, name) then
+                    Aesp(name, "item")
+                else
+                    Desp(name, "item")
+                end
+            end
+        else
+            for _, name in ipairs(ie) do
+                Desp(name, "item")
+            end
+        end
     end
 })
 
-TabHandles3.FWQ3Settings:Button({
-    Title = "死铁轨",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/XiaoXuCynic/Free-Script/refs/heads/main/UnicoX99%E5%A4%9C%E6%B7%B7%E6%B7%86.lua"))()
+Tabs.esp:Toggle({
+    Title = "开启Esp",
+    Value = false,
+    Callback = function(state)
+        espItemsxipro = state
+        for _, name in ipairs(ie) do
+            if state and table.find(ShenChouItems, name) then
+                Aesp(name, "item")
+            else
+                Desp(name, "item")
+            end
+        end
+
+        if state then
+            if not espConnections["Items"] then
+                local container = workspace:FindFirstChild("Items")
+                if container then
+                    espConnections["Items"] = container.ChildAdded:Connect(function(obj)
+                        if table.find(ShenChouItems, obj.Name) then
+                            local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
+                            if part then
+                                createESP(part, obj.Name, Color3.fromRGB(0, 255, 0))
+                            end
+                        end
+                    end)
+                end
+            end
+        else
+            if espConnections["Items"] then
+                espConnections["Items"]:Disconnect()
+                espConnections["Items"] = nil
+            end
+        end
     end
 })
 
-local TabHandles5 = {
+Tabs.esp:Section({ Title = "Esp实体", Icon = "user" })
+
+Tabs.esp:Dropdown({
+    Title = "选择Esp实体",
+    Values = me,
+    Value = {},
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        ShenChouMobs = options
+        if espMobsxipro then
+            for _, name in ipairs(me) do
+                if table.find(ShenChouMobs, name) then
+                    Aesp(name, "mob")
+                else
+                    Desp(name, "mob")
+                end
+            end
+        else
+            for _, name in ipairs(me) do
+                Desp(name, "mob")
+            end
+        end
+    end
+})
+
+Tabs.esp:Toggle({
+    Title = "开启Esp",
+    Value = false,
+    Callback = function(state)
+        espMobsxipro = state
+        for _, name in ipairs(me) do
+            if state and table.find(ShenChouMobs, name) then
+                Aesp(name, "mob")
+            else
+                Desp(name, "mob")
+            end
+        end
+
+        if state then
+            if not espConnections["Mobs"] then
+                local container = workspace:FindFirstChild("Characters")
+                if container then
+                    espConnections["Mobs"] = container.ChildAdded:Connect(function(obj)
+                        if table.find(ShenChouMobs, obj.Name) then
+                            local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
+                            if part then
+                                createESP(part, obj.Name, Color3.fromRGB(255, 255, 0))
+                            end
+                        end
+                    end)
+                end
+            end
+        else
+            if espConnections["Mobs"] then
+                espConnections["Mobs"]:Disconnect()
+                espConnections["Mobs"] = nil
+            end
+        end
+    end
+})
+
+Tabs.Main:Toggle({
+    Title = "自动眩晕鹿",
+    Value = false,
+    Callback = function(state)
+        if state then
+            torchxipro = RunService.RenderStepped:Connect(function()
+                pcall(function()
+                    local remote = ReplicatedStorage:FindFirstChild("RemoteEvents")
+                        and ReplicatedStorage.RemoteEvents:FindFirstChild("DeerHitByTorch")
+                    local deer = workspace:FindFirstChild("Characters")
+                        and workspace.Characters:FindFirstChild("Deer")
+                    if remote and deer then
+                        remote:InvokeServer(deer)
+                    end
+                end)
+                task.wait(0.1)
+            end)
+        else
+            if torchxipro then
+                torchxipro:Disconnect()
+                torchxipro = nil
+            end
+        end
+    end
+})
+
+mainTab:Button({
+    Title = "烹饪所有肉",
+    Callback = function()
+        local campfire = Vector3.new(1.87, 4.33, -3.67)
+        for i,v in pairs(workspace.Items:GetChildren()) do
+            if string.find(string.lower(v.Name), "meat") then
+                local part = v:FindFirstChildOfClass("BasePart")
+                if part then
+                    part.CFrame = CFrame.new(campfire + Vector3.new(math.random(-1,1), 1, math.random(-1,1)))
+                end
+            end
+        end
+        notify("烹饪", "已将肉移动到篝火")
+    end
+})
+
+local TabHandles4 = {
     FWQ4Settings = Tabs.Game:Tab({ Title = "终级战场", Icon = "crown" }),
 }
 
-TabHandles5.FWQ4Settings:Button({
+TabHandles4.FWQ4Settings:Button({
     Title = "篡改",
     Desc = "玩的时候第一先开启这个功能一定要",
     Callback = function()
@@ -803,7 +962,7 @@ TabHandles5.FWQ4Settings:Button({
 local fakeBlockEnabled = false
 local loopRunning = false
 
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "假防(关闭功能后按一次防御即可取消假防)",
     Default = false,
     Callback = function(state)
@@ -846,7 +1005,7 @@ TabHandles5.FWQ4Settings:Toggle({
 
 local defaultCooldown = game:GetService("ReplicatedStorage").Settings.Cooldowns.Dash.Value
 
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "侧闪无冷却",
     Default = false,
     Callback = function(state)
@@ -861,7 +1020,7 @@ TabHandles5.FWQ4Settings:Toggle({
 
 local defaultMeleeCooldown = game:GetService("ReplicatedStorage").Settings.Cooldowns.Melee.Value
 
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "近战无冷却",
     Default = false,
     Callback = function(state)
@@ -878,7 +1037,7 @@ local rs = game:GetService("ReplicatedStorage")
 local settings = rs.Settings
 
 local defaultAbility = settings.Cooldowns.Ability.Value
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "技能无冷却(仅宿傩角色)",
     Default = false,
     Callback = function(state)
@@ -891,7 +1050,7 @@ local noSlowdownsToggle = ReplicatedStorage.Settings.Toggles.NoSlowdowns
 
 local defaultValue = false
 
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "无减速效果",
     Default = noSlowdownsToggle.Value,
     Callback = function(state)
@@ -904,7 +1063,7 @@ TabHandles5.FWQ4Settings:Toggle({
 })
 
 local defaultDisableHitStun = settings.Toggles.DisableHitStun.Value
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "取消被攻击硬直",
     Default = false,
     Callback = function(state)
@@ -913,7 +1072,7 @@ TabHandles5.FWQ4Settings:Toggle({
 })
 
 local defaultDisableIntros = settings.Toggles.DisableIntros.Value
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "跳过角色开场动作",
     Default = false,
     Callback = function(state)
@@ -922,7 +1081,7 @@ TabHandles5.FWQ4Settings:Toggle({
 })
 
 local defaultNoStunOnMiss = settings.Toggles.NoStunOnMiss.Value
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "普攻无僵直",
     Default = false,
     Callback = function(state)
@@ -931,7 +1090,7 @@ TabHandles5.FWQ4Settings:Toggle({
 })
 
 local defaultRagdollTimer = settings.Multipliers.RagdollTimer.Value
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "被别人击倒不会变成布娃娃",
     Default = false,
     Callback = function(state)
@@ -940,7 +1099,7 @@ TabHandles5.FWQ4Settings:Toggle({
 })
 
 local defaultUltimateTimer = settings.Multipliers.UltimateTimer.Value
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "延长大招时间",
     Default = false,
     Callback = function(state)
@@ -949,7 +1108,7 @@ TabHandles5.FWQ4Settings:Toggle({
 })
 
 local defaultInstantTransformation = settings.Toggles.InstantTransformation.Value
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "秒开大",
     Default = false,
     Callback = function(state)
@@ -963,7 +1122,7 @@ local Ping = player:WaitForChild("Info"):WaitForChild("Ping")
 
 local loop
 
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "ping乱码",
     Default = false,
     Callback = function(state)
@@ -996,7 +1155,7 @@ local MeleeDamage = ReplicatedStorage:WaitForChild("Settings"):WaitForChild("Mul
 
 MeleeDamage.Value = 100
 
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "一拳倒地",
     Default = false,
     Callback = function(state)
@@ -1008,7 +1167,7 @@ TabHandles5.FWQ4Settings:Toggle({
     end
 })
 
-TabHandles5.FWQ4Settings:Toggle({
+TabHandles4.FWQ4Settings:Toggle({
     Title = "一拳击飞",
     Default = false,
     Callback = function(state)
@@ -1055,7 +1214,13 @@ TabHandles5.FWQ4Settings:Toggle({
     end
 })
 
-local about = TabHandles.FWQ1Settings:Section({Title = "面板", Opened = true})
+local Tabs = {
+    Game = Window:Section({ Title = "面板", Icon = "crown" ,Opened = true })
+}
+
+local TabHandles = {
+    FWQ5Settings = Tabs.Game:Tab({ Title = "战争大亨", Icon = "crown" }),
+}
 
 about:Button({
     Title = "范围",
@@ -1166,8 +1331,12 @@ about:Button({
     end
 })
 
-local TabHandles6 = {
-    FWQ5Settings = Tabs.Game:Tab({ Title = "活到7天", Icon = "crown" }),
+local Tabs = {
+    Game = Window:Section({ Title = "面板", Icon = "crown" ,Opened = true })
+}
+
+local TabHandles = {
+    FWQ6Settings = Tabs.Game:Tab({ Title = "活到7天", Icon = "crown" }),
 }
 
 local ESPName = {
@@ -1621,11 +1790,13 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-local TabHandles7 = {
-    FWQ6Settings = Tabs.Game:Tab({ Title = "自然灾害", Icon = "crown" }),
+local Tabs = {
+    Game = Window:Section({ Title = "面板", Icon = "crown" ,Opened = true })
 }
 
-local r156_0 = TabHandles7.FWQ6Settings:Section({Title = "主要功能", Opened = true})
+local TabHandles = {
+    FWQ7Settings = Tabs.Game:Tab({ Title = "自然灾害", Icon = "crown" }),
+}
 
 local autowinfarmEnabled = false
 r156_0:Toggle({
