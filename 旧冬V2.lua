@@ -6,7 +6,7 @@ if isfunctionhooked(game.HttpGet) or isfunctionhooked(getnamecallmethod) or isfu
     return
 end
 
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/XiaoXuCynic/Old-Winter-Script/refs/heads/main/windui(2).lua"))()
 
 WindUI.TransparencyValue = 0.3
 WindUI:SetTheme("Light")
@@ -95,16 +95,15 @@ GeneralSection:Button({
 
 local Cam1 = false
 local Cam2
-function Cam2()
-    while Cam1 do
+local function UpdateCamera()
+    while true do
         wait(0.1)
         local localPlayer = game:GetService("Players").LocalPlayer
-        localPlayer.CameraMaxZoomDistance = 9000000000
-    end
-    while not Cam1 do
-        wait(0.1)
-        local localPlayer = game:GetService("Players").LocalPlayer
-        localPlayer.CameraMaxZoomDistance = 32
+        if Cam1 then
+            localPlayer.CameraMaxZoomDistance = 9000000000
+        else
+            localPlayer.CameraMaxZoomDistance = 32
+        end
     end
 end
 
@@ -113,8 +112,8 @@ GeneralSection:Toggle({
     Default = false,
     Callback = function(enabled)
         Cam1 = enabled
-        if Cam1 then
-            Cam2()
+        if enabled then
+            coroutine.wrap(UpdateCamera)()
         end
     end
 })
@@ -133,7 +132,7 @@ GeneralSection:Toggle({
             Players = game.Players
             localPlayer = Players.LocalPlayer
             local mouse = localPlayer:GetMouse()
-            function ClosestPlayer()
+            local function ClosestPlayer()
                 local closestDistance = math.huge
                 local closestPlayer = nil
                 for _, player in pairs(Players:GetPlayers()) do
@@ -264,8 +263,8 @@ GeneralSection:Toggle({
     Callback = function(enabled)
         for _, player in pairs(game.Players:GetPlayers()) do
             if player ~= game.Players.LocalPlayer then
-                if enabled then
-                    if player.Character then
+                if player.Character then
+                    if enabled then
                         local highlight = Instance.new("Highlight")
                         highlight.Parent = player.Character
                         highlight.Adornee = player.Character
@@ -290,9 +289,7 @@ GeneralSection:Toggle({
                         imageLabel.AnchorPoint = Vector2.new(0.5, 0.5)
                         imageLabel.BackgroundTransparency = 1
                         imageLabel.Image = "rbxassetid://2200552246"
-                    end
-                else
-                    if player.Character then
+                    else
                         if player.Character:FindFirstChildOfClass("Highlight") then
                             player.Character:FindFirstChildOfClass("Highlight"):Destroy()
                         end
@@ -619,13 +616,10 @@ TabHandles.FWQ1Settings:Toggle({
     end
 })
 
-local Tabs = {
-    Game = Window:Section({ Title = "面板", Icon = "crown" ,Opened = true })
-}
-
-local TabHandles = {
+local TabHandles2 = {
     FWQ2Settings = Tabs.Game:Tab({ Title = "被遗弃", Icon = "crown" }),
 }
+
 TabHandles2.FWQ2Settings:Button({
     Title = "旧冬被遗弃",
     Callback = function()
@@ -759,11 +753,7 @@ TabHandles2.FWQ2Settings:Button({
     end
 })
 
-local Tabs = {
-    Game = Window:Section({ Title = "面板", Icon = "crown" ,Opened = true })
-}
-
-local TabHandles = {
+local TabHandles3 = {
     FWQ3Settings = Tabs.Game:Tab({ Title = "森林中的99夜", Icon = "crown" }),
 }
 
@@ -778,172 +768,6 @@ TabHandles3.FWQ3Settings:Button({
     Title = "二狗子99夜",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/gycgchgyfytdttr/shenqin/refs/heads/main/99day.lua"))()
-    end
-})
-
-Tabs.esp:Section({ Title = "Esp物品", Icon = "package" })
-
-Tabs.esp:Dropdown({
-    Title = "选择Esp物品",
-    Values = ie,
-    Value = {},
-    Multi = true,
-    AllowNone = true,
-    Callback = function(options)
-        ShenChouItems = options
-        if espItemsxipro then
-            for _, name in ipairs(ie) do
-                if table.find(ShenChouItems, name) then
-                    Aesp(name, "item")
-                else
-                    Desp(name, "item")
-                end
-            end
-        else
-            for _, name in ipairs(ie) do
-                Desp(name, "item")
-            end
-        end
-    end
-})
-
-Tabs.esp:Toggle({
-    Title = "开启Esp",
-    Value = false,
-    Callback = function(state)
-        espItemsxipro = state
-        for _, name in ipairs(ie) do
-            if state and table.find(ShenChouItems, name) then
-                Aesp(name, "item")
-            else
-                Desp(name, "item")
-            end
-        end
-
-        if state then
-            if not espConnections["Items"] then
-                local container = workspace:FindFirstChild("Items")
-                if container then
-                    espConnections["Items"] = container.ChildAdded:Connect(function(obj)
-                        if table.find(ShenChouItems, obj.Name) then
-                            local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
-                            if part then
-                                createESP(part, obj.Name, Color3.fromRGB(0, 255, 0))
-                            end
-                        end
-                    end)
-                end
-            end
-        else
-            if espConnections["Items"] then
-                espConnections["Items"]:Disconnect()
-                espConnections["Items"] = nil
-            end
-        end
-    end
-})
-
-Tabs.esp:Section({ Title = "Esp实体", Icon = "user" })
-
-Tabs.esp:Dropdown({
-    Title = "选择Esp实体",
-    Values = me,
-    Value = {},
-    Multi = true,
-    AllowNone = true,
-    Callback = function(options)
-        ShenChouMobs = options
-        if espMobsxipro then
-            for _, name in ipairs(me) do
-                if table.find(ShenChouMobs, name) then
-                    Aesp(name, "mob")
-                else
-                    Desp(name, "mob")
-                end
-            end
-        else
-            for _, name in ipairs(me) do
-                Desp(name, "mob")
-            end
-        end
-    end
-})
-
-Tabs.esp:Toggle({
-    Title = "开启Esp",
-    Value = false,
-    Callback = function(state)
-        espMobsxipro = state
-        for _, name in ipairs(me) do
-            if state and table.find(ShenChouMobs, name) then
-                Aesp(name, "mob")
-            else
-                Desp(name, "mob")
-            end
-        end
-
-        if state then
-            if not espConnections["Mobs"] then
-                local container = workspace:FindFirstChild("Characters")
-                if container then
-                    espConnections["Mobs"] = container.ChildAdded:Connect(function(obj)
-                        if table.find(ShenChouMobs, obj.Name) then
-                            local part = obj:IsA("BasePart") and obj or obj:FindFirstChildWhichIsA("BasePart")
-                            if part then
-                                createESP(part, obj.Name, Color3.fromRGB(255, 255, 0))
-                            end
-                        end
-                    end)
-                end
-            end
-        else
-            if espConnections["Mobs"] then
-                espConnections["Mobs"]:Disconnect()
-                espConnections["Mobs"] = nil
-            end
-        end
-    end
-})
-
-Tabs.Main:Toggle({
-    Title = "自动眩晕鹿",
-    Value = false,
-    Callback = function(state)
-        if state then
-            torchxipro = RunService.RenderStepped:Connect(function()
-                pcall(function()
-                    local remote = ReplicatedStorage:FindFirstChild("RemoteEvents")
-                        and ReplicatedStorage.RemoteEvents:FindFirstChild("DeerHitByTorch")
-                    local deer = workspace:FindFirstChild("Characters")
-                        and workspace.Characters:FindFirstChild("Deer")
-                    if remote and deer then
-                        remote:InvokeServer(deer)
-                    end
-                end)
-                task.wait(0.1)
-            end)
-        else
-            if torchxipro then
-                torchxipro:Disconnect()
-                torchxipro = nil
-            end
-        end
-    end
-})
-
-mainTab:Button({
-    Title = "烹饪所有肉",
-    Callback = function()
-        local campfire = Vector3.new(1.87, 4.33, -3.67)
-        for i,v in pairs(workspace.Items:GetChildren()) do
-            if string.find(string.lower(v.Name), "meat") then
-                local part = v:FindFirstChildOfClass("BasePart")
-                if part then
-                    part.CFrame = CFrame.new(campfire + Vector3.new(math.random(-1,1), 1, math.random(-1,1)))
-                end
-            end
-        end
-        notify("烹饪", "已将肉移动到篝火")
     end
 })
 
@@ -1214,13 +1038,11 @@ TabHandles4.FWQ4Settings:Toggle({
     end
 })
 
-local Tabs = {
-    Game = Window:Section({ Title = "面板", Icon = "crown" ,Opened = true })
-}
-
-local TabHandles = {
+local TabHandles5 = {
     FWQ5Settings = Tabs.Game:Tab({ Title = "战争大亨", Icon = "crown" }),
 }
+
+local about = TabHandles5.FWQ5Settings:Section({Title = "主要功能", Opened = true})
 
 about:Button({
     Title = "范围",
@@ -1331,11 +1153,7 @@ about:Button({
     end
 })
 
-local Tabs = {
-    Game = Window:Section({ Title = "面板", Icon = "crown" ,Opened = true })
-}
-
-local TabHandles = {
+local TabHandles6 = {
     FWQ6Settings = Tabs.Game:Tab({ Title = "活到7天", Icon = "crown" }),
 }
 
@@ -1431,7 +1249,7 @@ end)
 local animalConnection
 local scpConnection
 
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "动物透视",
     Default = false,
     Callback = function(state)
@@ -1452,7 +1270,7 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "怪物透视",
     Default = false,
     Callback = function(state)
@@ -1473,7 +1291,7 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "秒砍树",
     Default = false,
     Callback = function(state)
@@ -1494,7 +1312,7 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "自动钓鱼",
     Default = false,
     Callback = function(state)
@@ -1514,7 +1332,7 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-TabHandles6.FWQ5Settings:Button({
+TabHandles6.FWQ6Settings:Button({
     Title = "秒吃食物",
     Callback = function()
         if OAO.Character and OAO.Character:FindFirstChild("hunger") and OAO.Character.hunger.Value < 30 then
@@ -1530,7 +1348,7 @@ TabHandles6.FWQ5Settings:Button({
     end
 })
 
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "自动收集材料",
     Default = false,
     Callback = function(state)
@@ -1561,7 +1379,7 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-TabHandles6.FWQ5Settings:Button({
+TabHandles6.FWQ6Settings:Button({
     Title = "传送回出生点",
     Callback = function()
         if OAO.Character and OAO.Character:FindFirstChild("HumanoidRootPart") then
@@ -1571,7 +1389,7 @@ TabHandles6.FWQ5Settings:Button({
 })
 
 local oldpos
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "自动收集成熟品",
     Default = false,
     Callback = function(state)
@@ -1601,7 +1419,7 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "自动收集生鹿肉",
     Default = false,
     Callback = function(state)
@@ -1631,7 +1449,7 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "自动收集包菜",
     Default = false,
     Callback = function(state)
@@ -1659,7 +1477,7 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "枪械光环",
     Default = false,
     Callback = function(state)
@@ -1694,7 +1512,7 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "子弹追踪(锁头)",
     Default = false,
     Callback = function(state)
@@ -1723,7 +1541,7 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "自动传送最近的木头",
     Default = false,
     Callback = function(state)
@@ -1750,7 +1568,7 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "开启无限模式",
     Default = false,
     Callback = function(state)
@@ -1760,7 +1578,7 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "开启雨天",
     Default = false,
     Callback = function(state)
@@ -1770,7 +1588,7 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-TabHandles6.FWQ5Settings:Toggle({
+TabHandles6.FWQ6Settings:Toggle({
     Title = "自动拾取飞机残骸",
     Default = false,
     Callback = function(state)
@@ -1790,13 +1608,11 @@ TabHandles6.FWQ5Settings:Toggle({
     end
 })
 
-local Tabs = {
-    Game = Window:Section({ Title = "面板", Icon = "crown" ,Opened = true })
-}
-
-local TabHandles = {
+local TabHandles7 = {
     FWQ7Settings = Tabs.Game:Tab({ Title = "自然灾害", Icon = "crown" }),
 }
+
+local r156_0 = TabHandles7.FWQ7Settings:Section({Title = "主要功能", Opened = true})
 
 local autowinfarmEnabled = false
 r156_0:Toggle({
@@ -1944,10 +1760,10 @@ r156_0:Toggle({
 })
 
 local TabHandles8 = {
-    FWQ7Settings = Tabs.Game:Tab({ Title = "脑叶公司", Icon = "crown" }),
+    FWQ8Settings = Tabs.Game:Tab({ Title = "脑叶公司", Icon = "crown" }),
 }
 
-TabHandles8.FWQ7Settings:Button({
+TabHandles8.FWQ8Settings:Button({
     Title = "点击解锁所有异想体",
     Desc = "Unlock All Imaginations",
     Callback = function()
@@ -1968,7 +1784,7 @@ TabHandles8.FWQ7Settings:Button({
 local LocalPlayer = game.Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
-TabHandles8.FWQ7Settings:Slider({
+TabHandles8.FWQ8Settings:Slider({
     Title = "修改武器攻击间隔",
     Desc = "Attack Speed Value",
     Min = 0,
@@ -1981,7 +1797,7 @@ TabHandles8.FWQ7Settings:Slider({
     end
 })
 
-TabHandles8.FWQ7Settings:Input({
+TabHandles8.FWQ8Settings:Input({
     Title = "修改武器最大伤害",
     Callback = function(Value)
         for _,v in next,LocalPlayer.Backpack:GetChildren() do
@@ -1997,7 +1813,7 @@ TabHandles8.FWQ7Settings:Input({
     end
 })
 
-TabHandles8.FWQ7Settings:Input({
+TabHandles8.FWQ8Settings:Input({
     Title = "修改武器最小伤害",
     Callback = function(Value)
         for _,v in next,LocalPlayer.Backpack:GetChildren() do
@@ -2019,7 +1835,7 @@ local setting = {
     kill = false
 }
 
-TabHandles8.FWQ7Settings:Toggle({
+TabHandles8.FWQ8Settings:Toggle({
     Title = "开启自动工作",
     Default = false,
     Callback = function(state)
@@ -2050,7 +1866,7 @@ TabHandles8.FWQ7Settings:Toggle({
     end
 })
 
-TabHandles8.FWQ7Settings:Toggle({
+TabHandles8.FWQ8Settings:Toggle({
     Title = "自动格挡",
     Default = false,
     Callback = function(state)
@@ -2067,7 +1883,7 @@ TabHandles8.FWQ7Settings:Toggle({
     end
 })
 
-TabHandles8.FWQ7Settings:Toggle({
+TabHandles8.FWQ8Settings:Toggle({
     Title = "秒杀",
     Default = false,
     Callback = function(state)
@@ -2087,7 +1903,7 @@ for _, player in ipairs(Players:GetPlayers()) do
     end
 end
 
-local SelectPlayer = TabHandles8.FWQ7Settings:Dropdown({
+local SelectPlayer = TabHandles8.FWQ8Settings:Dropdown({
     Title = "选择玩家",
     Options = LOL.list,
     Default = "未选择",
@@ -2096,7 +1912,7 @@ local SelectPlayer = TabHandles8.FWQ7Settings:Dropdown({
     end
 })
 
-TabHandles8.FWQ7Settings:Button({
+TabHandles8.FWQ8Settings:Button({
     Title = "传送玩家",
     Desc = "Teleport player",
     Callback = function()
